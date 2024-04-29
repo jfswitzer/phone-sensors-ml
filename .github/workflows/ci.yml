@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - "phone_sensors/**"
+      - "tests/**"
+      - ".github/workflows/ci.yml"
+      - "pyproject.toml"
+      - "poetry.lock"
+  push:
+    paths:
+      - "phone_sensors/**"
+      - "tests/**"
+      - ".github/workflows/ci.yml"
+      - "pyproject.toml"
+      - "poetry.lock"
+  workflow_dispatch:
+
+jobs:
+  ci:
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+        poetry-version: ["1.8.2"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+      - name: Install dependencies
+        run: poetry install
+      - name: Run linter
+        run: poetry run pylint --rcfile=.pylintrc phone_sensors
+      - name: Run formatter
+        run: poetry run black -l 100 --check phone_sensors
+      - name: Run type checker
+        run: poetry run pyright phone_sensors
+      - name: Run tests
+        run: poetry run pytest
