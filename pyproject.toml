@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "phone-sensors"
+version = "0.1.0"
+description = ""
+authors = ["Yibo Wei <david_wyb2001@outlook.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+birdnetlib = "^0.17.2"
+fastapi = ">=0.109.0,<0.110.0"
+rq-dashboard-fast = "^0.3.8"
+rq = "^1.16.1"
+sqlmodel = "^0.0.16"
+pydantic = "^2.7.1"
+rich = "^13.7.1"
+geoalchemy2 = "^0.15.0"
+shapely = "^2.0.4"
+librosa = "^0.10.1"
+tensorflow = "^2.16.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^3.1.0"
+black = "^24.4.2"
+pyright = "^1.1.360"
+pytest = "^8.2.0"
+testcontainers = "^4.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
