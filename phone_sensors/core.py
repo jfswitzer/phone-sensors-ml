@@ -1,3 +1,5 @@
+"""Core functionality for phone_sensors package."""
+
 import logging
 
 from birdnetlib import Recording
