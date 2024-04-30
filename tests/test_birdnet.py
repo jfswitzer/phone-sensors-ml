@@ -1,3 +1,5 @@
+"""Tests for the birdnet module."""
+
 from pathlib import Path
 
 import rich
