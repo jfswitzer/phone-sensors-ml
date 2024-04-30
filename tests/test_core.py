@@ -2,7 +2,7 @@ from pathlib import Path
 
 import rich
 
-from phone_sensors.core import SensorMetadata, analyze_audio
+from phone_sensors.birdnet import SensorMetadata, analyze_audio
 
 SPECIES_LIST = """
 Accipiter cooperii_Cooper's Hawk
@@ -68,6 +68,6 @@ def test_analyze_audio():
             "accuracy": 10.0,
         }
     )
-    result = analyze_audio(file_path, sensor_metadata)
+    result = analyze_audio(file_path, sensor_metadata, 0.25)
     rich.print(result)
     assert len(result) > 0
