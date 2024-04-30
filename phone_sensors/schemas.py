@@ -35,17 +35,19 @@ class Detection(SQLModel, table=True):
     """Schema for the Prediction table."""
 
     detection_id: int = Field(default=None, primary_key=True)
-    sensor_id: UUID = Field(default=None, foreign_key="sensor.id")
-    timestamp: datetime.datetime = Field(default=datetime.datetime.now)
-    duration: float = Field(default=None)
-    lat: float = Field(default=None)
-    lon: float = Field(default=None)
-    coordinates: Any = Field(
+    sensor_id: UUID = Field(foreign_key="sensor.sensor_id")
+    timestamp: datetime.datetime
+    duration: float
+    lat: float
+    lon: float
+    coordinates: Any | None = Field(
         sa_column=Column(Geometry(geometry_type="POINT", srid=4326)), default=None
     )
-    accuracy: float = Field(default=None)
-    label: str = Field(nullable=False)
-    confidence: float = Field(default=0)
+    accuracy: float
+    scientific_name: str
+    common_name: str
+    label: str
+    confidence: float
 
     @classmethod
     def from_birdnet_detections(
@@ -64,6 +66,8 @@ class Detection(SQLModel, table=True):
                     lon=sensor_metadata.lon,
                     coordinates=shape.from_shape(Point(sensor_metadata.lon, sensor_metadata.lat)),
                     accuracy=sensor_metadata.accuracy,
+                    scientific_name=detection.scientific_name,
+                    common_name=detection.common_name,
                     label=detection.label,
                     confidence=detection.confidence,
                 )
@@ -77,21 +81,21 @@ class Detection(SQLModel, table=True):
         return coords.x, coords.y
 
 
-class SensorStatus(SQLModel, table=True):
+class Sensor(SQLModel, table=True):
     """Schema for the SensorStatus table to keep track of sensors"""
 
     sensor_id: UUID = Field(default=None, primary_key=True)
-    timestamp: datetime.datetime = Field(default=datetime.datetime.now)
-    battery_level: float = Field(default=None)
-    device_temperature: float = Field(default=None)
-    signal_strength: float = Field(default=None)
-    lat: float = Field(default=None)
-    lon: float = Field(default=None)
+    timestamp: datetime.datetime
+    battery_level: float
+    device_temperature: float
+    signal_strength: float
+    lat: float
+    lon: float
     coordinates: Any | None = Field(
         sa_column=Column(Geometry(geometry_type="POINT", srid=4326)), default=None
     )
-    software_version: str = Field(default=None)
-    model: str = Field(default=None)
+    software_version: str
+    model: str | None = Field(default=None)
 
     @field_serializer("coordinates")
     def serialize_coordinates(self, coords: Any) -> tuple[float, float]:
@@ -100,7 +104,7 @@ class SensorStatus(SQLModel, table=True):
         return coords.x, coords.y
 
     @classmethod
-    def from_json(cls, json_data: dict[str, Any]) -> "SensorStatus":
+    def from_json(cls, json_data: dict[str, Any]) -> "Sensor":
         """Create a SensorStatus instance from a JSON dictionary."""
         status = cls.model_validate(json_data)
         status.coordinates = shape.from_shape(Point(status.lon, status.lat))
