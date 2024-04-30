@@ -13,7 +13,7 @@ from phone_sensors.birdnet import submit_analyze_audio_job
 from phone_sensors.schemas import SensorMetadata
 from phone_sensors.settings import get_db_session, get_redis_connection
 
-app = FastAPI()
+app = FastAPI(title="Phone Sensors API", version="0.1.0")
 
 
 @app.get("/")
