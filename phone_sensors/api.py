@@ -2,17 +2,18 @@
 
 import tempfile
 from pathlib import Path
+from uuid import UUID
 
-from fastapi import FastAPI, UploadFile
+from fastapi import Depends, FastAPI, UploadFile
 from fastapi.responses import RedirectResponse
-from sqlmodel import create_engine
+from redis import Redis
+from sqlmodel import Session
 
-from phone_sensors.core import analyze_audio
-from phone_sensors.db import insert_detections
-from phone_sensors.schemas import Detection, SensorMetadata
+from phone_sensors.birdnet import submit_analyze_audio_job
+from phone_sensors.schemas import SensorMetadata
+from phone_sensors.settings import get_db_session, get_redis_connection
 
 app = FastAPI()
-engine = create_engine("postgresql://postgres:phonesensors@db/sensor_data")
 
 
 @app.get("/")
@@ -22,20 +23,33 @@ def read_root() -> RedirectResponse:
 
 
 @app.get("/health")
-def health_check() -> dict:
+def health_check() -> str:
     """Health check endpoint."""
-    return {"status": "ok"}
+    try:
+        get_db_session()
+        get_redis_connection()
+        return "OK"
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        return f"Error: {e}"
 
 
 @app.post("/sensor_upload")
-async def sensor_upload(metadata: SensorMetadata, file: UploadFile) -> list[Detection]:
-    """Sensor data upload endpoint."""
+async def sensor_upload(
+    *,
+    session: Session = Depends(get_db_session),
+    redis_conn: Redis = Depends(get_redis_connection),
+    metadata: SensorMetadata,
+    audio_file: UploadFile,
+) -> UUID:
+    """
+    This endpoint accepts a metadata and audio file in wav format.
+    Data will be queued to be processed by the server.
+    Returns a job ID in 128-bit UUID format.
+    """
     file_path = Path(tempfile.mktemp(suffix=".wav"))
-    file_path.write_bytes(await file.read())
-    birdnet_detections = analyze_audio(file_path, metadata)
-    detections = Detection.from_birdnet_detections(birdnet_detections, metadata)
-    insert_detections(engine, detections)
-    return detections
+    file_path.write_bytes(await audio_file.read())
+    job_id = submit_analyze_audio_job(session, redis_conn, file_path, sensor_metadata=metadata)
+    return job_id
 
 
 @app.post("/register_sensor")
