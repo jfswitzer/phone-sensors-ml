@@ -18,6 +18,13 @@ class SensorMetadata(BaseModel):
     lat: float
     lon: float
     accuracy: float
+    battery: float
+    temperature: float
+
+    @field_serializer("sensor_id")
+    def serialize_sensor_id(self, sensor_id: UUID) -> str:
+        """Serialize sensor ID to a string."""
+        return str(sensor_id)
 
 
 class BirdNetDetection(BaseModel):
@@ -79,33 +86,3 @@ class Detection(SQLModel, table=True):
         """Serialize coordinates to a tuple."""
         coords = shape.to_shape(coords)
         return coords.x, coords.y
-
-
-class Sensor(SQLModel, table=True):
-    """Schema for the SensorStatus table to keep track of sensors"""
-
-    sensor_id: UUID = Field(default=None, primary_key=True)
-    timestamp: datetime.datetime
-    battery_level: float
-    device_temperature: float
-    signal_strength: float
-    lat: float
-    lon: float
-    coordinates: Any | None = Field(
-        sa_column=Column(Geometry(geometry_type="POINT", srid=4326)), default=None
-    )
-    software_version: str
-    model: str | None = Field(default=None)
-
-    @field_serializer("coordinates")
-    def serialize_coordinates(self, coords: Any) -> tuple[float, float]:
-        """Serialize coordinates to a tuple."""
-        coords = shape.to_shape(coords)
-        return coords.x, coords.y
-
-    @classmethod
-    def from_json(cls, json_data: dict[str, Any]) -> "Sensor":
-        """Create a SensorStatus instance from a JSON dictionary."""
-        status = cls.model_validate(json_data)
-        status.coordinates = shape.from_shape(Point(status.lon, status.lat))
-        return status

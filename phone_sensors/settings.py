@@ -11,7 +11,7 @@ from sqlmodel import Session, create_engine
 class Settings(BaseSettings):
     """Settings for phone_sensors package."""
 
-    redis_dsn: RedisDsn = Field("redis://redis:6379/0")
+    redis_dsn: RedisDsn = Field("redis://0.0.0.0:6379/0")
     postgres_dsn: PostgresDsn = Field("postgresql://postgres:phonesensors@db/sensor_data")
     birdnet_min_confidence: float = Field(0.25)
 

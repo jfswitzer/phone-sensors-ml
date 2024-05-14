@@ -1,10 +1,11 @@
 """API endpoints for the phone sensors project."""
 
+import datetime
 import tempfile
 from pathlib import Path
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, UploadFile
+from fastapi import Depends, FastAPI, Form, UploadFile
 from fastapi.responses import RedirectResponse
 from redis import Redis
 from sqlmodel import Session
@@ -33,19 +34,34 @@ def health_check() -> str:
         return f"Error: {e}"
 
 
-@app.post("/sensor_upload")
-async def sensor_upload(
+@app.post("/upload")
+async def upload(
     *,
     session: Session = Depends(get_db_session),
     redis_conn: Redis = Depends(get_redis_connection),
-    metadata: SensorMetadata,
+    sensor_id: UUID = Form(...),
+    timestamp: datetime.datetime = Form(...),
+    lat: float = Form(...),
+    lon: float = Form(...),
+    accuracy: float = Form(...),
+    battery: float = Form(...),
+    temperature: float = Form(...),
     audio_file: UploadFile,
 ) -> UUID:
     """
-    This endpoint accepts a metadata and audio file in wav format.
+    This endpoint accepts metadata and audio file in wav format as form data.
     Data will be queued to be processed by the server.
     Returns a job ID in 128-bit UUID format.
     """
+    metadata = SensorMetadata(
+        sensor_id=sensor_id,
+        timestamp=timestamp,
+        lat=lat,
+        lon=lon,
+        accuracy=accuracy,
+        battery=battery,
+        temperature=temperature,
+    )
     file_path = Path(tempfile.mktemp(suffix=".wav"))
     file_path.write_bytes(await audio_file.read())
     job_id = submit_analyze_audio_job(session, redis_conn, file_path, sensor_metadata=metadata)

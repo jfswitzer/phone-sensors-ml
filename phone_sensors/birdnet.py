@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def analyze_audio(
     file_path: FilePath, sensor_metadata: SensorMetadata, min_conf: float
-) -> list[BirdNetDetection]:
+) -> tuple[list[BirdNetDetection], SensorMetadata]:
     """Analyze audio file and return list of bird species."""
     logger.info("Analyzing audio file %s...", file_path)
     logger.debug("Sensor metadata: %s", sensor_metadata.model_dump_json(indent=2))
@@ -32,21 +32,17 @@ def analyze_audio(
         min_conf=min_conf,
     )
     recording.analyze()
-    return recording.detections
+    return recording.detections, sensor_metadata
 
 
 def on_analyze_audio_job_success(
-    job: Job,
-    connection: Redis,
-    result: list[BirdNetDetection],
-    *args,
-    session: Session,
-    sensor_metadata: SensorMetadata,
-    **kwargs
-):  # pylint: disable=unused-argument # type: ignore
+    job: Job, connection: Redis, result: list[BirdNetDetection], *args, **kwargs
+) -> None:  # pylint: disable=unused-argument # type: ignore
     """Callback for analyze_audio job success."""
-    session.add_all(Detection.from_birdnet_detections(result, sensor_metadata))
-    session.commit()
+    detections, sensor_metadata = result
+    print("Processing result:", result)
+    # session.add_all(Detection.from_birdnet_detections(detections, sensor_metadata))
+    # session.commit()
 
 
 def submit_analyze_audio_job(
@@ -58,8 +54,6 @@ def submit_analyze_audio_job(
         file_path=file_path,
         sensor_metadata=sensor_metadata,
         min_conf=get_settings().birdnet_min_confidence,
-        on_success=Callback(
-            partial(on_analyze_audio_job_success, sensor_metadata=sensor_metadata, session=session)
-        ),
+        on_success=Callback(on_analyze_audio_job_success),
     )
     return job.id
