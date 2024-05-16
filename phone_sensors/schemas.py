@@ -14,7 +14,7 @@ class SensorStatus(SQLModel, table=True):
     """Schema for the SensorMetadata format."""
 
     __tablename__ = "sensor_status"  # type: ignore
-    sensor_id: UUID
+    sensor_id: UUID = Field(primary_key=True)
     timestamp: datetime.datetime
     lat: float
     lon: float
