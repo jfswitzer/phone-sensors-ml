@@ -10,9 +10,10 @@ from shapely import Point
 from sqlmodel import Column, Field, SQLModel
 
 
-class SensorMetadata(BaseModel):
+class SensorStatus(SQLModel, table=True):
     """Schema for the SensorMetadata format."""
 
+    __tablename__ = "sensor_status"  # type: ignore
     sensor_id: UUID
     timestamp: datetime.datetime
     lat: float
@@ -41,8 +42,9 @@ class BirdNetDetection(BaseModel):
 class Detection(SQLModel, table=True):
     """Schema for the Prediction table."""
 
+    __tablename__ = "detection"  # type: ignore
     detection_id: int = Field(default=None, primary_key=True)
-    sensor_id: UUID = Field(foreign_key="sensor.sensor_id")
+    sensor_id: UUID = Field(foreign_key="sensor_status.sensor_id")
     timestamp: datetime.datetime
     duration: float
     lat: float
@@ -58,7 +60,7 @@ class Detection(SQLModel, table=True):
 
     @classmethod
     def from_birdnet_detections(
-        cls, birdnet_detections: list[BirdNetDetection], sensor_metadata: SensorMetadata
+        cls, birdnet_detections: list[BirdNetDetection], sensor_metadata: SensorStatus
     ) -> list["Detection"]:
         """Create a list of Detection instances from BirdNet detections."""
         detections = []

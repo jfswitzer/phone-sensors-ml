@@ -11,7 +11,7 @@ from redis import Redis
 from sqlmodel import Session
 
 from phone_sensors.birdnet import submit_analyze_audio_job
-from phone_sensors.schemas import SensorMetadata
+from phone_sensors.schemas import SensorStatus
 from phone_sensors.settings import get_db_session, get_redis_connection
 
 app = FastAPI(title="Phone Sensors API", version="0.1.0")
@@ -53,7 +53,7 @@ async def upload(
     Data will be queued to be processed by the server.
     Returns a job ID in 128-bit UUID format.
     """
-    metadata = SensorMetadata(
+    metadata = SensorStatus(
         sensor_id=sensor_id,
         timestamp=timestamp,
         lat=lat,
@@ -64,11 +64,5 @@ async def upload(
     )
     file_path = Path(tempfile.mktemp(suffix=".wav"))
     file_path.write_bytes(await audio_file.read())
-    job_id = submit_analyze_audio_job(session, redis_conn, file_path, sensor_metadata=metadata)
+    job_id = submit_analyze_audio_job(redis_conn, file_path, sensor_status=metadata)
     return job_id
-
-
-@app.post("/register_sensor")
-def register_sensor() -> dict:
-    """Sensor registration endpoint."""
-    raise NotImplementedError("Not implemented yet")

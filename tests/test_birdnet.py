@@ -4,7 +4,7 @@ from pathlib import Path
 
 import rich
 
-from phone_sensors.birdnet import SensorMetadata, analyze_audio
+from phone_sensors.birdnet import SensorStatus, analyze_audio
 
 SPECIES_LIST = """
 Accipiter cooperii_Cooper's Hawk
@@ -61,7 +61,7 @@ Zonotrichia albicollis_White-throated Sparrow
 def test_analyze_audio():
     """Test analyze_audio function."""
     file_path = Path("./example.wav")
-    sensor_metadata = SensorMetadata.model_validate(
+    sensor_metadata = SensorStatus.model_validate(
         {
             "sensor_id": "123e4567-e89b-12d3-a456-426614174000",
             "timestamp": "2021-01-01T12:00:00",
