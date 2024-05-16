@@ -35,4 +35,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-ps-server = "phone_sensors.cli:server"
+ps-server = "phone_sensors.cli:main"
