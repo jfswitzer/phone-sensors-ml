@@ -8,7 +8,6 @@ from uuid import UUID
 from fastapi import Depends, FastAPI, Form, UploadFile
 from fastapi.responses import RedirectResponse
 from redis import Redis
-from sqlmodel import Session
 
 from phone_sensors.birdnet import submit_analyze_audio_job
 from phone_sensors.schemas import SensorStatus
