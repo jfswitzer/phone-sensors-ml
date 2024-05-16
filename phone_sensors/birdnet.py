@@ -1,17 +1,15 @@
 """BirdNet audio analysis functions."""
 
 import logging
-from functools import partial
 from uuid import UUID
 
 from birdnetlib import Recording
 from birdnetlib.analyzer import Analyzer
 from pydantic import FilePath
 from redis import Redis
-from requests import session
 from rq import Callback, Queue
 from rq.job import Job
-from sqlmodel import Session, select
+from sqlmodel import select
 
 from phone_sensors.schemas import BirdNetDetection, Detection, SensorStatus
 from phone_sensors.settings import get_db_session, get_settings
@@ -38,8 +36,8 @@ def analyze_audio(
 
 
 def on_analyze_audio_job_success(
-    job: Job,
-    connection: Redis,
+    job: Job,  # pylint: disable=unused-argument # type: ignore
+    connection: Redis,  # pylint: disable=unused-argument # type: ignore
     result: tuple[list[BirdNetDetection], SensorStatus],
     *args,
     **kwargs
@@ -48,6 +46,7 @@ def on_analyze_audio_job_success(
     detections, sensor_status = result
     print("Processing result:", result)
     # update sensor status if exists, otherwise create new
+    sensor_status.add_coordinates()
     session = next(get_db_session())
     curr_status = session.exec(
         select(SensorStatus).where(SensorStatus.sensor_id == sensor_status.sensor_id)
@@ -59,6 +58,7 @@ def on_analyze_audio_job_success(
         curr_status.accuracy = sensor_status.accuracy
         curr_status.battery = sensor_status.battery
         curr_status.temperature = sensor_status.temperature
+        curr_status.coordinates = sensor_status.coordinates
     else:
         session.add(sensor_status)
     session.commit()

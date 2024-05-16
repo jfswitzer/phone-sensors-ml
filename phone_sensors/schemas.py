@@ -21,11 +21,24 @@ class SensorStatus(SQLModel, table=True):
     accuracy: float
     battery: float
     temperature: float
+    coordinates: Any | None = Field(
+        sa_column=Column(Geometry(geometry_type="POINT", srid=4326)), default=None
+    )
 
     @field_serializer("sensor_id")
     def serialize_sensor_id(self, sensor_id: UUID) -> str:
         """Serialize sensor ID to a string."""
         return str(sensor_id)
+
+    @field_serializer("coordinates")
+    def serialize_coordinates(self, coords: Any) -> tuple[float, float]:
+        """Serialize coordinates to a tuple."""
+        coords = shape.to_shape(coords)
+        return coords.x, coords.y
+
+    def add_coordinates(self):
+        """Generate coordinates from lat and lon."""
+        self.coordinates = shape.from_shape(Point(self.lon, self.lat))
 
 
 class BirdNetDetection(BaseModel):
