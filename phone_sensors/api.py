@@ -37,7 +37,6 @@ def health_check() -> str:
 @app.post("/upload")
 async def upload(
     *,
-    session: Session = Depends(get_db_session),
     redis_conn: Redis = Depends(get_redis_connection),
     sensor_id: UUID = Form(...),
     timestamp: datetime.datetime = Form(...),
