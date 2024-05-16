@@ -33,7 +33,8 @@ def analyze_audio(
         min_conf=min_conf,
     )
     recording.analyze()
-    return recording.detections, sensor_status
+    detections = [BirdNetDetection.model_validate(d) for d in recording.detections]
+    return detections, sensor_status
 
 
 def on_analyze_audio_job_success(
