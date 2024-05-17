@@ -44,7 +44,7 @@ poetry env use 3.12 # or 3.11
 poetry install --no-root
 ```
 
-### Running the server
+### Running the server (No setup required)
 
 We use Docker Compose to run the server. To start the server, run:
 
@@ -54,6 +54,10 @@ docker-compose up
 # or, to run in the background
 docker-compose up -d
 ```
+
+By default, the API server will be available at `http://localhost:8000`.
+
+You can change the port by modifying the `docker-compose.yml` file.
 
 ### Before you push any changes:
 
