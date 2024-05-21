@@ -7,7 +7,6 @@ from uuid import UUID
 
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import RedirectResponse
-from pydub import AudioSegment
 from redis import Redis
 
 from phone_sensors.birdnet import submit_analyze_audio_job
@@ -70,13 +69,6 @@ async def upload(
         )
 
     file_path = Path(tempfile.gettempdir()) / file_name
-    wav_file_path = file_path.with_suffix(".wav")
     file_path.write_bytes(audio_data)
-    try:
-        AudioSegment.from_file(file_path).export(wav_file_path, format="wav")
-        file_path.unlink()
-        return submit_analyze_audio_job(redis_conn, wav_file_path, status)
-    except Exception as e:
-        if wav_file_path.exists():
-            wav_file_path.unlink()
-        raise HTTPException(status_code=400, detail=f"Error converting file to wav: {e}") from e
+
+    return submit_analyze_audio_job(redis_conn, file_path, status)

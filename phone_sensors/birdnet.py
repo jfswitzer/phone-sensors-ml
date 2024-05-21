@@ -13,6 +13,7 @@ from sqlmodel import select
 
 from phone_sensors.schemas import BirdNetDetection, Detection, SensorStatus
 from phone_sensors.settings import get_db_session, get_settings
+from phone_sensors.utils import convert_to_wav
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +24,12 @@ def analyze_audio(
     """Analyze audio file and return list of bird species."""
     logger.info("Analyzing audio file %s...", file_path)
     logger.debug("Sensor metadata: %s", sensor_status.model_dump_json(indent=2))
+    wav_path = file_path
+    if file_path.suffix != ".wav":
+        wav_path = convert_to_wav(file_path)
     recording = Recording(
         analyzer=Analyzer(),
-        path=file_path,
+        path=wav_path,
         lat=sensor_status.lat,
         lon=sensor_status.lon,
         min_conf=min_conf,
@@ -34,6 +38,7 @@ def analyze_audio(
     detections = [BirdNetDetection.model_validate(d) for d in recording.detections]
     if remove_file:
         file_path.unlink()
+        wav_path.unlink()
     return detections, sensor_status
 
 
