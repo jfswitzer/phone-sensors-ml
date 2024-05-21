@@ -1,7 +1,7 @@
 """Data formats and database schema for the phone sensors project."""
 
 import datetime
-from typing import Any
+from typing import Any, Self
 from uuid import UUID
 
 from geoalchemy2 import Geometry, shape
@@ -31,14 +31,17 @@ class SensorStatus(SQLModel, table=True):
         return str(sensor_id)
 
     @field_serializer("coordinates")
-    def serialize_coordinates(self, coords: Any) -> tuple[float, float]:
+    def serialize_coordinates(self, coords: Any) -> str | None:
         """Serialize coordinates to a tuple."""
+        if coords is None:
+            return None
         coords = shape.to_shape(coords)
-        return coords.x, coords.y
+        return f"POINT({coords.x}, {coords.y})"
 
-    def add_coordinates(self):
+    def add_coordinates(self) -> Self:
         """Generate coordinates from lat and lon."""
         self.coordinates = shape.from_shape(Point(self.lon, self.lat))
+        return self
 
 
 class BirdNetDetection(BaseModel):
