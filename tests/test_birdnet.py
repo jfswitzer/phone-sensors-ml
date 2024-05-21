@@ -1,6 +1,8 @@
 """Tests for the birdnet module."""
 
+import datetime
 from pathlib import Path
+from uuid import UUID
 
 import rich
 
@@ -61,15 +63,15 @@ Zonotrichia albicollis_White-throated Sparrow
 def test_analyze_audio():
     """Test analyze_audio function."""
     file_path = Path("./example.wav")
-    sensor_metadata = SensorStatus.model_validate(
-        {
-            "sensor_id": "123e4567-e89b-12d3-a456-426614174000",
-            "timestamp": "2021-01-01T12:00:00",
-            "lat": 52.52,
-            "lon": 13.405,
-            "accuracy": 10.0,
-        }
+    sensor_status = SensorStatus(
+        sensor_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
+        timestamp=datetime.datetime.now(datetime.timezone.utc),
+        lat=52.52,
+        lon=13.405,
+        accuracy=10.0,
+        battery=0.5,
+        temperature=20.0,
     )
-    result = analyze_audio(file_path, sensor_metadata, 0.25)
+    result = analyze_audio(file_path, sensor_status, 0.25)
     rich.print(result)
     assert len(result) > 0
