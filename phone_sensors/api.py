@@ -69,8 +69,6 @@ async def upload(
     file_path = Path(tempfile.gettempdir()) / file_name
     with open(file_path, "wb") as file:
         file.write(audio_data)
-    audio = AudioSegment.from_wav(file_path)
-    audio.export(file_path, format="wav")
+    AudioSegment.from_wav(file_path).export(file_path, format="wav")
 
-    job_id = submit_analyze_audio_job(redis_conn, file_path, status)
-    return job_id
+    return submit_analyze_audio_job(redis_conn, file_path, status)

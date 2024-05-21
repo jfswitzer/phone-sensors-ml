@@ -1,3 +1,5 @@
+"""Utility functions"""
+
 from geoalchemy2 import WKBElement
 from geoalchemy2.shape import from_shape, to_shape
 from shapely import Point

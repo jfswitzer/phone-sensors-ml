@@ -13,6 +13,7 @@ from phone_sensors.settings import get_redis_connection, get_settings
 
 
 def main():
+    """CLI entry point."""
     settings = get_settings()
     rich.print(settings)
     engine = create_engine(str(settings.postgres_dsn))

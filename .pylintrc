@@ -1,2 +1,5 @@
 [MAIN]
 load-plugins=pylint.extensions.docparams
+
+[MESSAGES CONTROL]
+disable=too-many-arguments
