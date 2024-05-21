@@ -30,8 +30,8 @@ def health_check() -> str:
         get_db_session()
         get_redis_connection()
         return "OK"
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        return f"Error: {e}"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}") from e
 
 
 @app.post("/upload")
@@ -63,12 +63,20 @@ async def upload(
     )
     status.add_coordinates()
     audio_data = await audio_file.read()
-    file_name = audio_file.filename or f"{datetime.datetime.now(datetime.UTC).isoformat()}.wav"
-    if not file_name.endswith(".ogg"):
-        raise HTTPException(status_code=400, detail="Only .ogg files are supported.")
-    file_path = Path(tempfile.gettempdir()) / file_name
-    with open(file_path, "wb") as file:
-        file.write(audio_data)
-    AudioSegment.from_wav(file_path).export(file_path, format="wav")
+    file_name = audio_file.filename
+    if file_name is None:
+        raise HTTPException(
+            status_code=400, detail="Missing file name, unable to determine file type."
+        )
 
-    return submit_analyze_audio_job(redis_conn, file_path, status)
+    file_path = Path(tempfile.gettempdir()) / file_name
+    wav_file_path = file_path.with_suffix(".wav")
+    file_path.write_bytes(audio_data)
+    try:
+        audio: AudioSegment = AudioSegment.from_file(file_path)
+        audio.export(wav_file_path, format="wav")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error converting file to wav: {e}") from e
+
+    file_path.unlink()
+    return submit_analyze_audio_job(redis_conn, wav_file_path, status)

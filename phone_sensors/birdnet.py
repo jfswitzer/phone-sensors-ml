@@ -32,6 +32,7 @@ def analyze_audio(
     )
     recording.analyze()
     detections = [BirdNetDetection.model_validate(d) for d in recording.detections]
+    file_path.unlink()
     return detections, sensor_status
 
 
