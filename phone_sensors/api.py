@@ -73,8 +73,7 @@ async def upload(
     wav_file_path = file_path.with_suffix(".wav")
     file_path.write_bytes(audio_data)
     try:
-        audio: AudioSegment = AudioSegment.from_file(file_path)
-        audio.export(wav_file_path, format="wav")
+        AudioSegment.from_file(file_path).export(wav_file_path, format="wav")
         file_path.unlink()
         return submit_analyze_audio_job(redis_conn, wav_file_path, status)
     except Exception as e:
