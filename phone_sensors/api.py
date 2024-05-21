@@ -5,8 +5,9 @@ import tempfile
 from pathlib import Path
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, Form, UploadFile
+from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import RedirectResponse
+from pydub import AudioSegment
 from redis import Redis
 
 from phone_sensors.birdnet import submit_analyze_audio_job
@@ -51,7 +52,7 @@ async def upload(
     Data will be queued to be processed by the server.
     Returns a job ID in 128-bit UUID format.
     """
-    metadata = SensorStatus(
+    status = SensorStatus(
         sensor_id=sensor_id,
         timestamp=timestamp,
         lat=lat,
@@ -60,7 +61,16 @@ async def upload(
         battery=battery,
         temperature=temperature,
     )
-    file_path = Path(tempfile.mktemp(suffix=".wav"))
-    file_path.write_bytes(await audio_file.read())
-    job_id = submit_analyze_audio_job(redis_conn, file_path, sensor_status=metadata)
+    status.add_coordinates()
+    audio_data = await audio_file.read()
+    file_name = audio_file.filename or f"{datetime.datetime.now(datetime.UTC).isoformat()}.wav"
+    if not file_name.endswith(".ogg"):
+        raise HTTPException(status_code=400, detail="Only .ogg files are supported.")
+    file_path = Path(tempfile.gettempdir()) / file_name
+    with open(file_path, "wb") as file:
+        file.write(audio_data)
+    audio = AudioSegment.from_wav(file_path)
+    audio.export(file_path, format="wav")
+
+    job_id = submit_analyze_audio_job(redis_conn, file_path, status)
     return job_id
