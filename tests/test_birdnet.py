@@ -72,6 +72,6 @@ def test_analyze_audio():
         battery=0.5,
         temperature=20.0,
     ).add_coordinates()
-    result = analyze_audio(file_path, sensor_status, 0.25)
+    result = analyze_audio(file_path, sensor_status, 0.25, remove_file=False)
     rich.print(result)
     assert len(result) > 0

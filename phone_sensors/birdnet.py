@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def analyze_audio(
-    file_path: FilePath, sensor_status: SensorStatus, min_conf: float
+    file_path: FilePath, sensor_status: SensorStatus, min_conf: float, remove_file: bool = True
 ) -> tuple[list[BirdNetDetection], SensorStatus]:
     """Analyze audio file and return list of bird species."""
     logger.info("Analyzing audio file %s...", file_path)
@@ -32,7 +32,8 @@ def analyze_audio(
     )
     recording.analyze()
     detections = [BirdNetDetection.model_validate(d) for d in recording.detections]
-    file_path.unlink()
+    if remove_file:
+        file_path.unlink()
     return detections, sensor_status
 
 
