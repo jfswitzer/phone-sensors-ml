@@ -75,8 +75,9 @@ async def upload(
     try:
         audio: AudioSegment = AudioSegment.from_file(file_path)
         audio.export(wav_file_path, format="wav")
+        file_path.unlink()
+        return submit_analyze_audio_job(redis_conn, wav_file_path, status)
     except Exception as e:
+        if wav_file_path.exists():
+            wav_file_path.unlink()
         raise HTTPException(status_code=400, detail=f"Error converting file to wav: {e}") from e
-
-    file_path.unlink()
-    return submit_analyze_audio_job(redis_conn, wav_file_path, status)
