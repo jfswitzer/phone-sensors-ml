@@ -8,12 +8,16 @@ from uuid import UUID
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import RedirectResponse
 from redis import Redis
+from rq_dashboard_fast import RedisQueueDashboard
 
 from phone_sensors.birdnet import submit_analyze_audio_job
 from phone_sensors.schemas import SensorStatus
 from phone_sensors.settings import get_db_session, get_redis_connection
 
 app = FastAPI(title="Phone Sensors API", version="0.1.0")
+dashboard = RedisQueueDashboard("redis://redis:6379/", "/rq")
+
+app.mount("/rq", dashboard)
 
 
 @app.get("/")
