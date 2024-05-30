@@ -30,8 +30,8 @@ def read_root() -> RedirectResponse:
 def health_check() -> str:
     """Health check endpoint."""
     try:
-        get_db_session()
-        get_redis_connection()
+        next(get_db_session())
+        next(get_redis_connection()).ping()
         return "OK"
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}") from e
@@ -72,7 +72,7 @@ async def upload(
             status_code=400, detail="Missing file name, unable to determine file type."
         )
 
-    file_path = Path(tempfile.gettempdir()) / file_name
+    file_path = Path(tempfile.gettempdir()) / Path(file_name).name
     file_path.write_bytes(audio_data)
 
     return submit_analyze_audio_job(redis_conn, file_path, status)
