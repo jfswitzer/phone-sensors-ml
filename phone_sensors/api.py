@@ -72,7 +72,9 @@ async def upload(
             status_code=400, detail="Missing file name, unable to determine file type."
         )
 
-    file_path = Path(tempfile.gettempdir()) / Path(file_name).name
+    suffix = Path(file_name).suffix
+
+    file_path = Path(tempfile.mktemp(suffix=suffix))
     file_path.write_bytes(audio_data)
 
     return submit_analyze_audio_job(redis_conn, file_path, status)
