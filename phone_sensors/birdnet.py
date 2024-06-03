@@ -1,5 +1,7 @@
 """BirdNet audio analysis functions."""
 
+# pylint: disable=unused-argument
+
 import logging
 from uuid import UUID
 
@@ -43,12 +45,12 @@ def analyze_audio(
 
 
 def on_analyze_audio_job_success(
-    job: Job,  # pylint: disable=unused-argument # type: ignore
-    connection: Redis,  # pylint: disable=unused-argument # type: ignore
+    job: Job,
+    connection: Redis,
     result: tuple[list[BirdNetDetection], SensorStatus],
     *args,
     **kwargs
-) -> None:  # pylint: disable=unused-argument # type: ignore
+) -> None:
     """Callback for analyze_audio job success."""
     detections, sensor_status = result
     print("Processing result:", result)
