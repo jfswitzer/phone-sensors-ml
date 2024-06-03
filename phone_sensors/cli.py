@@ -33,7 +33,9 @@ def main():
     )
     worker_pool_process = Process(
         target=WorkerPool(
-            ["default", "high", "low"], num_workers=3, connection=next(get_redis_connection())
+            ["default", "high", "low"],
+            num_workers=settings.num_workers,
+            connection=next(get_redis_connection()),
         ).start
     )
     api_process.start()

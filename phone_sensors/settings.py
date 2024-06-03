@@ -3,7 +3,7 @@
 from typing import Generator
 
 from pydantic import Field, PostgresDsn, RedisDsn
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from redis import Redis
 from sqlmodel import Session, create_engine
 
@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     host: str = Field("0.0.0.0")
     port: int = Field(8000)
     birdnet_min_confidence: float = Field(0.25)
+    num_workers: int = Field(1)
+
+    model_config = SettingsConfigDict(env_prefix="ps_")
 
 
 def get_settings() -> Settings:
