@@ -22,7 +22,7 @@ This project is developed using the following technologies:
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 - Python >= 3.11 (3.12 recommended)
-- [Poetry](https://python-poetry.org/)
+- [Poetry](https://python-poetry.org/) for dependency management
 
 ### Setup
 
@@ -38,10 +38,35 @@ git clone https://github.com/Microwave-WYB/phone-sensors.git
 poetry env use 3.12 # or 3.11
 ```
 
-3. Install the dependencies (Not required if you are using Docker):
+3. Install the dependencies:
 
 ```sh
 poetry install --no-root
+```
+
+### Managing dependencies
+
+This project uses [Poetry](https://python-poetry.org/) for dependency management. To add a new dependency, run:
+
+```sh
+poetry add <package-name>
+
+# or, to add to a specific group
+poetry add --dev <package-name>
+```
+
+To remove a dependency, run:
+
+```sh
+poetry remove <package-name>
+```
+
+You should commit both `pyproject.toml` and `poetry.lock` files after making changes to the dependencies.
+
+To bump the release version of the project, run:
+
+```sh
+poetry version <major|minor|patch>
 ```
 
 ### Running the server (No setup required)
