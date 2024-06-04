@@ -2,6 +2,17 @@
 
 This repository contains the backend code for the project "Upcycled Phone Sensors". The project aims to reuse old smartphones for acoustic monitoring with [BirdNET](https://birdnet.cornell.edu/).
 
+## Project Overview
+
+This project aims to provide a solution for reusing old smartphones for acoustic monitoring.
+
+The project consists of two main components:
+
+1. [**Android App**](https://github.com/rjwc1/eardrum): An Android app that records audio clips and uploads them to the server for processing.
+2. **Server** (this repo): A backend server that processes the audio clips using BirdNET and stores the results in a database.
+
+![Overview](assets/overview.png)
+
 ## Technical Overview
 
 This project is developed using the following technologies:
