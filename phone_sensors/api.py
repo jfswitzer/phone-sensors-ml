@@ -55,6 +55,7 @@ async def upload(
     Data will be queued to be processed by the server.
     Returns a job ID in 128-bit UUID format.
     """
+    print("TEST TEST")
     status = SensorStatus(
         sensor_id=sensor_id,
         timestamp=timestamp,
@@ -78,3 +79,43 @@ async def upload(
     file_path.write_bytes(audio_data)
 
     return submit_analyze_audio_job(redis_conn, file_path, status)
+
+@app.post("/detections")
+async def detections(
+    *,
+    redis_conn: Redis = Depends(get_redis_connection),
+    sensor_id: UUID = Form(...),
+    timestamp: datetime.datetime = Form(...),
+    lat: float = Form(...),
+    lon: float = Form(...),
+    accuracy: float = Form(...),
+    battery: float = Form(...),
+    temperature: float = Form(...),
+    csv_file: UploadFile,
+) -> UUID:
+    """
+    Endpoint for uploading detections
+    Returns a job ID in 128-bit UUID format.
+    """
+    status = SensorStatus(
+        sensor_id=sensor_id,
+        timestamp=timestamp,
+        lat=lat,
+        lon=lon,
+        accuracy=accuracy,
+        battery=battery,
+        temperature=temperature,
+    )
+    status.add_coordinates()
+    detection_data = await csv_file.read()
+    file_name = csv_file.filename
+    if file_name is None:
+        raise HTTPException(
+            status_code=400, detail="Missing file name, unable to determine file type.")
+
+    suffix = Path(file_name).suffix
+
+    file_path = Path(tempfile.mktemp(suffix=suffix))
+    file_path.write_bytes(detection_data)
+
+    return submit_analyze_detections(redis_conn, file_path, status)
