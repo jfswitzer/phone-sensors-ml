@@ -15,8 +15,8 @@ services:
     image: dpage/pgadmin4
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: y2wei@ucsd.edu
-      PGADMIN_DEFAULT_PASSWORD: phonesensors
+      PGADMIN_DEFAULT_EMAIL: jfswitze@ucsd.edu
+      PGADMIN_DEFAULT_PASSWORD: hijenjen
     ports:
       - "5050:80"
 
@@ -32,7 +32,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "8000:8000"
+      - "44544:8000"
     command: ps-server
 
 volumes:
